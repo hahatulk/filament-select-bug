@@ -1,0 +1,40 @@
+version: '3.9'
+services:
+  app:
+    build:
+      context: ./docker/app
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - pgsql
+    volumes:
+      - .:/app
+
+  nginx:
+    build:
+      context: ./docker/nginx
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - '8000:80'
+    volumes:
+      - .:/app
+
+  pgsql:
+    build:
+      context: ./docker/pgsql
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgsql_data:/var/lib/postgresql
+
+volumes:
+  pgsql_data:
